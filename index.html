@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>UniPark - Student Parking</title>
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        /* ================= HEADER ================= */
+
+        header {
+            background: #17324d;
+            color: white;
+            padding: 18px 6%;
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: auto;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #4da3ff;
+        }
+
+        .nav-text {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        /* ================= HERO ================= */
+
+        .hero {
+            max-width: 1200px;
+            margin: 35px auto 25px;
+
+            padding: 40px;
+
+            background: white;
+
+            border-radius: 18px;
+
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
+        .hero h1 {
+            font-size: 38px;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            color: #667085;
+            max-width: 650px;
+            line-height: 1.6;
+        }
+
+        .hero button {
+            margin-top: 20px;
+
+            background: #2563eb;
+            color: white;
+
+            border: none;
+            padding: 13px 20px;
+
+            border-radius: 9px;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .hero button:hover {
+            background: #1d4ed8;
+        }
+
+        /* ================= MAIN ================= */
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 20px 50px;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin: 30px 0 15px;
+        }
+
+        .section-heading h2 {
+            font-size: 22px;
+        }
+
+        .section-heading p {
+            color: #667085;
+            font-size: 14px;
+        }
+
+        /* ================= PARKING ROW ================= */
+
+        .parking-row {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 15px;
+
+            margin-bottom: 15px;
+
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .row-title {
+            font-size: 17px;
+            font-weight: bold;
+
+            margin-bottom: 15px;
+        }
+
+        .spots {
+            display: grid;
+
+            grid-template-columns: repeat(12, 1fr);
+
+            gap: 8px;
+        }
+
+        .spot {
+            background: #f8fafc;
+
+            border: 1px solid #e2e8f0;
+
+            padding: 14px 5px;
+
+            border-radius: 8px;
+
+            text-align: center;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .spot:hover {
+            background: #eaf2ff;
+
+            border-color: #2563eb;
+
+            transform: translateY(-2px);
+        }
+
+        .spot.saved {
+            background: #eaf8ef;
+
+            border-color: #49a66b;
+
+            color: #16803c;
+        }
+
+        /* ================= SAVED PARKING ================= */
+
+        .my-parking {
+            display: none;
+
+            background: white;
+
+            border-radius: 15px;
+
+            padding: 25px;
+
+            margin-top: 25px;
+
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+
+        .my-parking.show {
+            display: block;
+        }
+
+        .saved-content {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+        .saved-label {
+            color: #667085;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+        }
+
+        .saved-spot {
+            font-size: 42px;
+
+            font-weight: bold;
+
+            color: #17324d;
+        }
+
+        .saved-info {
+            color: #667085;
+
+            font-size: 14px;
+
+            margin-top: 5px;
+        }
+
+        .clear-btn {
+            background: #eef2f7;
+
+            border: none;
+
+            padding: 11px 17px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+        }
+
+        .clear-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* ================= MODAL ================= */
+
+        .modal {
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(15,23,42,0.55);
+
+            display: none;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 20px;
+
+            z-index: 100;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+
+            width: 100%;
+
+            max-width: 420px;
+
+            padding: 30px;
+
+            border-radius: 18px;
+
+            text-align: center;
+
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-box h2 {
+            margin-bottom: 10px;
+        }
+
+        .big-spot {
+            font-size: 55px;
+
+            font-weight: bold;
+
+            color: #17324d;
+
+            margin: 15px;
+        }
+
+        .modal-box p {
+            color: #667085;
+
+            line-height: 1.5;
+
+            font-size: 14px;
+        }
+
+        .modal-box input {
+            width: 100%;
+
+            padding: 13px;
+
+            margin: 18px 0;
+
+            border: 1px solid #d0d5dd;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+        }
+
+        .cancel {
+            background: #eef2f7;
+        }
+
+        .save {
+            background: #2563eb;
+
+            color: white;
+        }
+
+        .save:hover {
+            background: #1d4ed8;
+        }
+
+        /* ================= QR MODAL ================= */
+
+        #qrContainer {
+            display: flex;
+
+            justify-content: center;
+
+            margin: 20px;
+        }
+
+        /* ================= FOOTER ================= */
+
+        footer {
+            text-align: center;
+
+            color: #667085;
+
+            font-size: 13px;
+
+            padding: 30px;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 800px) {
+
+            .hero {
+                margin: 15px;
+
+                padding: 25px;
+            }
+
+            .hero h1 {
+                font-size: 29px;
+            }
+
+            .container {
+                padding: 0 15px 40px;
+            }
+
+            .spots {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .saved-content {
+                flex-direction: column;
+
+                align-items: flex-start;
+
+                gap: 15px;
+            }
+
+            .section-heading {
+                flex-direction: column;
+
+                align-items: flex-start;
+
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header>
+
+    <div class="navbar">
+
+        <div class="logo">
+            Uni<span>Park</span>
+        </div>
+
+        <div class="nav-text">
+            Student Parking Assistant
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ================= HERO ================= -->
+
+<section class="hero">
+
+    <h1>
+        Never forget where you parked.
+    </h1>
+
+    <p>
+        Scan the QR code attached to your parking spot.
+        UniPark will remember your parking location for
+        14 hours so you can easily find your vehicle later.
+    </p>
+
+    <button onclick="manualParking()">
+        Enter Parking Spot
+    </button>
+
+</section>
+
+
+<!-- ================= MAIN ================= -->
+
+<div class="container">
+
+    <div class="section-heading">
+
+        <h2>
+            Student Parking
+        </h2>
+
+        <p>
+            36 parking spots available
+        </p>
+
+    </div>
+
+
+    <!-- PARKING ROWS -->
+
+    <div id="parkingContainer"></div>
+
+
+    <!-- ================= MY PARKING ================= -->
+
+    <div id="myParking" class="my-parking">
+
+        <div class="saved-content">
+
+            <div>
+
+                <div class="saved-label">
+                    YOUR PARKING LOCATION
+                </div>
+
+                <div id="savedSpot" class="saved-spot">
+                    A1
+                </div>
+
+                <div id="savedInfo" class="saved-info">
+                    Saved at 10:30 AM
+                </div>
+
+            </div>
+
+            <button
+                class="clear-btn"
+                onclick="clearParking()"
+            >
+                Clear Location
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer>
+
+    UniPark • Student Parking System
+
+</footer>
+
+
+<!-- ================= SAVE PARKING MODAL ================= -->
+
+<div id="parkingModal" class="modal">
+
+    <div class="modal-box">
+
+        <h2>
+            Save Parking Location
+        </h2>
+
+        <div id="modalSpot" class="big-spot">
+            A1
+        </div>
+
+        <p>
+            Your parking location will be saved
+            on this device for 14 hours.
+        </p>
+
+        <input
+            type="text"
+            id="vehicleNumber"
+            placeholder="Vehicle number (optional)"
+        >
+
+        <div class="modal-buttons">
+
+            <button
+                class="cancel"
+                onclick="closeModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="save"
+                onclick="saveParking()"
+            >
+                Save Location
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* ============================================
+       SETTINGS
+    ============================================ */
+
+    const PARKING_DURATION = 14 * 60 * 60 * 1000;
+
+    let selectedSpot = null;
+
+
+    /* ============================================
+       CREATE PARKING SPOTS
+    ============================================ */
+
+    function createParkingLayout() {
+
+        const container =
+            document.getElementById("parkingContainer");
+
+        const rows = ["A", "B", "C"];
+
+        rows.forEach(row => {
+
+            const rowDiv =
+                document.createElement("div");
+
+            rowDiv.className = "parking-row";
+
+            rowDiv.innerHTML = `
+                <div class="row-title">
+                    ROW ${row}
+                </div>
+
+                <div class="spots" id="row-${row}">
+                </div>
+            `;
+
+            container.appendChild(rowDiv);
+
+
+            const spotsContainer =
+                document.getElementById(`row-${row}`);
+
+
+            for (let i = 1; i <= 12; i++) {
+
+                const spotName = row + i;
+
+                const button =
+                    document.createElement("button");
+
+                button.className = "spot";
+
+                button.innerText = spotName;
+
+                button.onclick =
+                    () => openParkingModal(spotName);
+
+                spotsContainer.appendChild(button);
+            }
+
+        });
+
+    }
+
+
+    /* ============================================
+       OPEN PARKING MODAL
+    ============================================ */
+
+    function openParkingModal(spot) {
+
+        selectedSpot = spot;
+
+        document.getElementById("modalSpot")
+            .innerText = spot;
+
+        document.getElementById("vehicleNumber")
+            .value = "";
+
+        document.getElementById("parkingModal")
+            .classList.add("show");
+
+    }
+
+
+    /* ============================================
+       CLOSE MODAL
+    ============================================ */
+
+    function closeModal() {
+
+        document.getElementById("parkingModal")
+            .classList.remove("show");
+
+    }
+
+
+    /* ============================================
+       SAVE PARKING
+    ============================================ */
+
+    function saveParking() {
+
+        const vehicle =
+            document
+            .getElementById("vehicleNumber")
+            .value
+            .trim();
+
+
+        const parkingData = {
+
+            spot: selectedSpot,
+
+            vehicle: vehicle,
+
+            savedAt: Date.now()
+
+        };
+
+
+        localStorage.setItem(
+            "uniparkParking",
+            JSON.stringify(parkingData)
+        );
+
+
+        closeModal();
+
+        displaySavedParking();
+
+        highlightSavedSpot();
+
+    }
+
+
+    /* ============================================
+       GET SAVED PARKING
+    ============================================ */
+
+    function getSavedParking() {
+
+        const saved =
+            localStorage.getItem(
+                "uniparkParking"
+            );
+
+
+        if (!saved) {
+            return null;
+        }
+
+
+        try {
+
+            return JSON.parse(saved);
+
+        } catch {
+
+            return null;
+
+        }
+
+    }
+
+
+    /* ============================================
+       DISPLAY SAVED PARKING
+    ============================================ */
+
+    function displaySavedParking() {
+
+        const data =
+            getSavedParking();
+
+
+        const parkingCard =
+            document.getElementById("myParking");
+
+
+        if (!data) {
+
+            parkingCard.classList.remove("show");
+
+            return;
+
+        }
+
+
+        /* Check 14 hour expiry */
+
+        if (
+            Date.now() - data.savedAt
+            >= PARKING_DURATION
+        ) {
+
+            localStorage.removeItem(
+                "uniparkParking"
+            );
+
+            parkingCard.classList.remove("show");
+
+            return;
+
+        }
+
+
+        parkingCard.classList.add("show");
+
+
+        document.getElementById("savedSpot")
+            .innerText = data.spot;
+
+
+        const savedTime =
+            new Date(data.savedAt);
+
+
+        const expiryTime =
+            new Date(
+                data.savedAt +
+                PARKING_DURATION
+            );
+
+
+        let info =
+            "Saved at " +
+            savedTime.toLocaleTimeString(
+                [],
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+
+        if (data.vehicle) {
+
+            info +=
+                " • Vehicle: " +
+                data.vehicle;
+
+        }
+
+
+        info +=
+            " • Expires at " +
+            expiryTime.toLocaleTimeString(
+                [],
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+
+        document.getElementById("savedInfo")
+            .innerText = info;
+
+    }
+
+
+    /* ============================================
+       HIGHLIGHT SAVED SPOT
+    ============================================ */
+
+    function highlightSavedSpot() {
+
+        const data =
+            getSavedParking();
+
+
+        document
+            .querySelectorAll(".spot")
+            .forEach(button => {
+
+                button.classList.remove(
+                    "saved"
+                );
+
+
+                if (
+                    data &&
+                    button.innerText === data.spot
+                ) {
+
+                    button.classList.add(
+                        "saved"
+                    );
+
+                }
+
+            });
+
+    }
+
+
+    /* ============================================
+       CLEAR PARKING
+    ============================================ */
+
+    function clearParking() {
+
+        localStorage.removeItem(
+            "uniparkParking"
+        );
+
+
+        displaySavedParking();
+
+        highlightSavedSpot();
+
+    }
+
+
+    /* ============================================
+       MANUAL PARKING
+    ============================================ */
+
+    function manualParking() {
+
+        let spot =
+            prompt(
+                "Enter your parking spot (A1-C12):"
+            );
+
+
+        if (!spot) {
+            return;
+        }
+
+
+        spot =
+            spot
+            .trim()
+            .toUpperCase();
+
+
+        const valid =
+            /^[ABC](?:[1-9]|1[0-2])$/
+            .test(spot);
+
+
+        if (!valid) {
+
+            alert(
+                "Invalid parking spot.\n\n" +
+                "Use A1-A12, B1-B12 or C1-C12."
+            );
+
+            return;
+
+        }
+
+
+        openParkingModal(spot);
+
+    }
+
+
+    /* ============================================
+       QR CODE SUPPORT
+       
+       Example:
+
+       index.html?spot=A5
+
+       When a QR scanner opens this URL,
+       the website automatically knows
+       the parking spot is A5.
+    ============================================ */
+
+    function checkQRCode() {
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const spot =
+            urlParams.get("spot");
+
+
+        if (!spot) {
+            return;
+        }
+
+
+        const cleanSpot =
+            spot.trim().toUpperCase();
+
+
+        const valid =
+            /^[ABC](?:[1-9]|1[0-2])$/
+            .test(cleanSpot);
+
+
+        if (valid) {
+
+            setTimeout(() => {
+
+                openParkingModal(
+                    cleanSpot
+                );
+
+            }, 500);
+
+        }
+
+    }
+
+
+    /* ============================================
+       START WEBSITE
+    ============================================ */
+
+    createParkingLayout();
+
+    displaySavedParking();
+
+    highlightSavedSpot();
+
+    checkQRCode();
+
+
+    /* Check every minute for expiry */
+
+    setInterval(() => {
+
+        displaySavedParking();
+
+        highlightSavedSpot();
+
+    }, 60000);
+
+</script>
+
+</body>
+</html>
